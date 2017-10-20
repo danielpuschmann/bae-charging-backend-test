@@ -9,7 +9,7 @@ RUN git clone https://github.com/danielpuschmann/bae-charging-backend-test.git
 
 RUN pip install sh
 
-WORKDIR business-ecosystem-charging-backend
+WORKDIR bae-charging-backend-test
 
 RUN git checkout develop
 
@@ -26,9 +26,9 @@ RUN ./python-dep-install.sh
 
 # Create volumes
 VOLUME /data/db
-VOLUME /business-ecosystem-charging-backend/src/media/bills
-VOLUME /business-ecosystem-charging-backend/src/media/assets
-VOLUME /business-ecosystem-charging-backend/src/plugins
+VOLUME /bae-charging-backend-test/src/media/bills
+VOLUME /bae-charging-backend-test/src/media/assets
+VOLUME /bae-charging-backend-test/src/plugins
 
 WORKDIR src
 
@@ -41,7 +41,7 @@ COPY charging.conf ./sites-available
 RUN ln -s ../sites-available/charging.conf ./sites-enabled/charging.conf
 RUN sed -i "s|Listen 80|Listen 8006|g" ports.conf
 
-WORKDIR /business-ecosystem-charging-backend/src
+WORKDIR /bae-charging-backend-test/src
 
 COPY ./entrypoint.sh /
 
