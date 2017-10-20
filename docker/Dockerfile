@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y --fix-missing \
     python-dev build-essential libssl-dev libffi-dev \
     apache2 libapache2-mod-wsgi
 
-RUN git clone https://github.com/FIWARE-TMForum/business-ecosystem-charging-backend.git
+RUN git clone https://github.com/danielpuschmann/bae-charging-backend-test.git
 
 RUN pip install sh
 
