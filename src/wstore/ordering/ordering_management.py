@@ -41,6 +41,8 @@ class OrderingManager:
         self._validator = ProductValidator()
 
     def _download(self, url, element, item_id):
+
+        self.find_calling_order("_download")
         r = requests.get(url)
 
         if r.status_code != 200:
@@ -50,6 +52,7 @@ class OrderingManager:
 
     def _get_offering(self, item):
 
+        self.find_calling_order("_get_offering")
         # Download related product offering and product specification
         offering_info = self._download(item['productOffering']['href'], 'product offering', item['id'])
 
@@ -78,6 +81,7 @@ class OrderingManager:
 
     def _parse_price(self, model_mapper, price):
 
+        self.find_calling_order("_parse_price")
         if price['priceType'].lower() not in model_mapper:
             raise OrderingError('Invalid price model ' + price['priceType'])
 
@@ -95,6 +99,7 @@ class OrderingManager:
         }
 
     def _parse_alteration(self, alteration, type_):
+        self.find_calling_order("_parse_alteration")
         # Alterations cannot specify usage models
         if alteration['priceType'].lower() != 'one time' and alteration['priceType'].lower() != 'recurring':
             raise OrderingError('Invalid priceType in price alteration, it must be one time or recurring')
@@ -131,6 +136,7 @@ class OrderingManager:
         return alt_model
 
     def _get_effective_pricing(self, item_id, product_price, offering_info):
+        self.find_calling_order("_get_effective_pricing")
         # Search the pricing chosen by the user
         def field_included(pricing, field):
             return field in pricing and len(pricing[field]) > 0
@@ -164,6 +170,7 @@ class OrderingManager:
     def _build_contract(self, item):
         # TODO: Check that the ordering API is actually validating that the chosen pricing and characteristics are valid for the given product
 
+        self.find_calling_order("_build_contract")
         # Build offering
         offering, offering_info = self._get_offering(item)
 
@@ -222,6 +229,7 @@ class OrderingManager:
 
     def _get_billing_address(self, items):
 
+        self.find_calling_order("_get_billing_address")
         def _download_asset(url):
             r = requests.get(url, headers={'Authorization': 'Bearer ' + self._customer.userprofile.access_token })
 
@@ -251,6 +259,7 @@ class OrderingManager:
 
     def _process_add_items(self, items, order_id, description):
 
+        self.find_calling_order("_process_add_items")
         new_contracts = [self._build_contract(item) for item in items]
 
         current_org = self._customer.userprofile.current_organization
@@ -271,6 +280,8 @@ class OrderingManager:
         return charging_engine.resolve_charging()
 
     def _get_existing_contract(self, inv_client, product_id):
+
+        self.find_calling_order("_get_existing_contract")
         # Get product info
         raw_product = inv_client.get_product(product_id)
 
@@ -293,6 +304,8 @@ class OrderingManager:
         return order, contract
 
     def _process_modify_items(self, items):
+
+        self.find_calling_order("_process_modify_items")
         if len(items) > 1:
             raise OrderingError('Only a modify item is supported per order item')
 
@@ -321,6 +334,7 @@ class OrderingManager:
         return charging_engine.resolve_charging(type_='initial', related_contracts=[contract])
 
     def _process_delete_items(self, items):
+        self.find_calling_order("_process_delet_items")
         for item in items:
             if 'product' not in item:
                 raise OrderingError('It is required to specify product information in delete order items')
@@ -389,3 +403,6 @@ class OrderingManager:
             redirection_url = self._process_add_items(items['add'], order['id'], description)
 
         return redirection_url
+
+    def find_calling_order(self, method_name):
+        raise OrderingError("Got up until method: " + method_name)
